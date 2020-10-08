@@ -15,9 +15,10 @@
   },
   "dependencies": {
     "classnames": "^2.1.2",
+    "gulp-git": "^2.10.1",
     "prop-types": "^15.6.0",
     "react-fast-compare": "^2.0.4",
-    "require-dir": "1.2.0"
+    "require-dir": "^1.2.0"
   },
   "devDependencies": {
     "babel-eslint": "^4.1.3",
