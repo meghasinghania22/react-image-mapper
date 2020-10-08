@@ -11,7 +11,8 @@ export default class ImageMapper extends Component {
 			"drawpoly",
 			"initCanvas",
 			"renderPrefilledAreas",
-			"renderOtherAreas"
+			"renderOtherAreas",
+			"highlightAreas"
 		].forEach(f => (this[f] = this[f].bind(this)));
 		let absPos = { position: "absolute", top: 0, left: 0 };
 		this.styles = {
@@ -30,7 +31,10 @@ export default class ImageMapper extends Component {
 			"src",
 			"strokeColor",
 			"width",
-			"multiple"
+			"highlight",
+			"multiple",
+			"map",
+			"highlightColor"
 		];
 	}
 
@@ -116,6 +120,7 @@ export default class ImageMapper extends Component {
 		if (this.props.onLoad) this.props.onLoad();
 
 		this.renderPrefilledAreas();
+		this.highlightAreas();
 	}
 
 	hoverOn(area, index, event) {
@@ -139,6 +144,7 @@ export default class ImageMapper extends Component {
 			this.renderPrefilledAreas();
 		}
 
+		if (this.props.highlight) this.highlightAreas();
 		if (this.props.onMouseLeave) this.props.onMouseLeave(area, index, event);
 	}
 
@@ -198,6 +204,22 @@ export default class ImageMapper extends Component {
 				area.strokeColor || this.props.strokeColor
 			);
 		});
+	}
+
+	highlightAreas() {
+		if (this.props.highlight) {
+			const areas = this.state.map.areas.filter(
+				a => a.name === this.props.highlight
+			);
+			areas.map(area => {
+				this["draw" + area.shape](
+					this.scaleCoords(area.coords),
+					area.highlightColor || this.props.highlightColor,
+					area.lineWidth || this.props.lineWidth,
+					area.strokeColor || this.props.strokeColor
+				);
+			});
+		}
 	}
 
 	computeCenter(area) {
@@ -269,6 +291,7 @@ export default class ImageMapper extends Component {
 ImageMapper.defaultProps = {
 	active: true,
 	multiple: false,
+	highlight: undefined,
 	fillColor: "rgba(255, 255, 255, 0.5)",
 	lineWidth: 1,
 	map: {
@@ -282,12 +305,14 @@ ImageMapper.propTypes = {
 	active: PropTypes.bool,
 	fillColor: PropTypes.string,
 	height: PropTypes.number,
+	highlightColor: PropTypes.string,
 	imgWidth: PropTypes.number,
 	lineWidth: PropTypes.number,
 	src: PropTypes.string.isRequired,
 	strokeColor: PropTypes.string,
 	width: PropTypes.number,
 	multiple: PropTypes.bool,
+	highlight: PropTypes.string,
 	onClick: PropTypes.func,
 	onMouseMove: PropTypes.func,
 	onImageClick: PropTypes.func,
