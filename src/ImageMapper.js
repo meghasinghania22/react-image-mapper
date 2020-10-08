@@ -10,7 +10,8 @@ export default class ImageMapper extends Component {
 			"drawcircle",
 			"drawpoly",
 			"initCanvas",
-			"renderPrefilledAreas"
+			"renderPrefilledAreas",
+			"renderOtherAreas"
 		].forEach(f => (this[f] = this[f].bind(this)));
 		let absPos = { position: "absolute", top: 0, left: 0 };
 		this.styles = {
@@ -28,7 +29,8 @@ export default class ImageMapper extends Component {
 			"lineWidth",
 			"src",
 			"strokeColor",
-			"width"
+			"width",
+			"multiple"
 		];
 	}
 
@@ -82,7 +84,7 @@ export default class ImageMapper extends Component {
 			(a, v, i, s) => (i % 2 ? a : [...a, s.slice(i, i + 2)]),
 			[]
 		);
-		
+
 		this.ctx.fillStyle = fillColor;
 		this.ctx.beginPath();
 		this.ctx.lineWidth = lineWidth;
@@ -127,6 +129,7 @@ export default class ImageMapper extends Component {
 				area.strokeColor || this.props.strokeColor
 			);
 		}
+		if (this.props.multiple) this.renderOtherAreas(area);
 		if (this.props.onMouseEnter) this.props.onMouseEnter(area, index, event);
 	}
 
@@ -155,6 +158,7 @@ export default class ImageMapper extends Component {
 
 	mouseMove(area, index, event) {
 		if (this.props.onMouseMove) {
+			this.hoverOn(area, index, event);
 			this.props.onMouseMove(area, index, event);
 		}
 	}
@@ -178,6 +182,18 @@ export default class ImageMapper extends Component {
 			this["draw" + area.shape](
 				this.scaleCoords(area.coords),
 				area.preFillColor,
+				area.lineWidth || this.props.lineWidth,
+				area.strokeColor || this.props.strokeColor
+			);
+		});
+	}
+
+	renderOtherAreas(area) {
+		const areas = this.state.map.areas.filter(a => a.name === area.name);
+		areas.map(area => {
+			this["draw" + area.shape](
+				this.scaleCoords(area.coords),
+				area.fillColor,
 				area.lineWidth || this.props.lineWidth,
 				area.strokeColor || this.props.strokeColor
 			);
@@ -252,6 +268,7 @@ export default class ImageMapper extends Component {
 
 ImageMapper.defaultProps = {
 	active: true,
+	multiple: false,
 	fillColor: "rgba(255, 255, 255, 0.5)",
 	lineWidth: 1,
 	map: {
@@ -270,7 +287,7 @@ ImageMapper.propTypes = {
 	src: PropTypes.string.isRequired,
 	strokeColor: PropTypes.string,
 	width: PropTypes.number,
-
+	multiple: PropTypes.bool,
 	onClick: PropTypes.func,
 	onMouseMove: PropTypes.func,
 	onImageClick: PropTypes.func,
